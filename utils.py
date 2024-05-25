@@ -27,6 +27,7 @@ def get_script(response):
         # Write the code to a .py file
         with open("streamlit_app.py", "w") as file:
             file.write(code)
+        st.balloons()
         print("Code extracted and written to streamlit_app.py")
         return True
     else:
@@ -147,11 +148,14 @@ def generate_arctic_response():
     prompt_str = "\n".join(prompt)
 
     if get_num_tokens(prompt_str) >= 4096:
-        st.error("Conversation length too long. Please keep it under 4096 tokens.")
-        st.button(
-            "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
+        st.error(
+            "Conversation length too long. Please keep it under 4096 tokens. Please clear memory."
         )
         st.stop()
+
+    st.sidebar.button(
+        "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
+    )
 
     for event in replicate.stream(
         "meta/meta-llama-3-70b-instruct",

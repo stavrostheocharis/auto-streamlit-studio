@@ -1,9 +1,14 @@
 import streamlit as st
 import os
-from utils import get_script, generate_arctic_response
+import sys
+import toml
+import importlib
+from utils import get_script, generate_arctic_response, clear_chat_history
 
 # App title
 st.set_page_config(page_title="Auto-streamlit", page_icon="🤖", layout="wide")
+info = toml.load("info.toml")
+
 
 if "rerun" not in st.session_state.keys():
     st.session_state.rerun = False
@@ -12,6 +17,10 @@ if "rerun" not in st.session_state.keys():
 def display_sidebar_ui():
     with st.sidebar:
         st.title("Auto-streamlit")
+        tool_description = info["tool_description"]
+        with st.expander("About Auto-Streamlit"):
+            st.title(tool_description["title"])
+            st.markdown(tool_description["description"])
 
         if "REPLICATE_API_TOKEN" in st.secrets:
             print("Replicate API token found in secrets.")
@@ -55,18 +64,53 @@ with st.sidebar:
             st.session_state.rerun = True
             st.rerun()
 
-
-file_path = "streamlit_app.py"
+    col1, col2 = st.columns(2)
+    with col1:
+        if len(st.session_state.messages) > 2:
+            st.button(
+                "Clear chat history",
+                on_click=clear_chat_history,
+                key="clear_chat_history",
+            )
+        else:
+            st.button(
+                "Clear chat history",
+                key="clear_chat_history",
+                disabled=True,
+            )
+    with col2:
+        file_path = "streamlit_app.py"
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                btn = st.download_button(
+                    label="Download file",
+                    data=file.read(),
+                    file_name="streamlit_app.py",
+                    mime="text/x-python",
+                )
+        else:
+            st.download_button(
+                label="Download file",
+                data="",
+                file_name="streamlit_app.py",
+                mime="text/x-python",
+                disabled=True,
+            )
 
 print(st.session_state.messages, " st.session_state.messages")
 if os.path.exists(file_path):
-    from streamlit_app import main
+    try:
+        # Import the module dynamically
+        if "streamlit_app" in sys.modules:
+            streamlit_app = importlib.reload(sys.modules["streamlit_app"])
+        else:
+            streamlit_app = importlib.import_module("streamlit_app")
+        streamlit_app.main()
 
-    main()
-
-    # print(st.session_state.messages)
-    if st.session_state.rerun:
-        st.session_state.rerun = False
-        st.rerun()
+        if st.session_state.rerun:
+            st.session_state.rerun = False
+            st.rerun()
+    except ImportError as e:
+        st.error(f"Error importing streamlit_app: {e}")
 else:
     print(f"The file {file_path} does not exist.")
