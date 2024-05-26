@@ -97,20 +97,28 @@ with st.sidebar:
                 disabled=True,
             )
 
-print(st.session_state.messages, " st.session_state.messages")
-if os.path.exists(file_path):
-    try:
-        # Import the module dynamically
-        if "streamlit_app" in sys.modules:
-            streamlit_app = importlib.reload(sys.modules["streamlit_app"])
-        else:
-            streamlit_app = importlib.import_module("streamlit_app")
-        streamlit_app.main()
+# if os.path.exists(file_path):
+#     try:
+#         # Import the module dynamically
+#         if "streamlit_app" in sys.modules:
+#             streamlit_app = importlib.reload(sys.modules["streamlit_app"])
+#         else:
+#             streamlit_app = importlib.import_module("streamlit_app")
+#         streamlit_app.main()
 
-        if st.session_state.rerun:
-            st.session_state.rerun = False
-            st.rerun()
-    except ImportError as e:
-        st.error(f"Error importing streamlit_app: {e}")
-else:
-    print(f"The file {file_path} does not exist.")
+#         if st.session_state.rerun:
+#             st.session_state.rerun = False
+#             st.rerun()
+#     except ImportError as e:
+#         st.error(f"Error importing streamlit_app: {e}")
+# else:
+#     print(f"The file {file_path} does not exist.")
+
+# <iframe
+#   src="https://30days.streamlit.app?embed=true"
+#   style="height: 450px; width: 100%;"
+# ></iframe>
+
+import streamlit.components.v1 as components
+
+components.iframe("http://localhost:8502", width=900, height=800, scrolling=True)
