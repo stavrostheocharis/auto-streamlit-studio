@@ -67,16 +67,10 @@ def clear_chat_history():
     st.session_state.chat_aborted = False
 
 
-def correct_code(query):
-    """Analyze the user's code to correct it."""
+def summary_text(query):
     prompt = []
     system_prompt_content = (
-        "You are a python code corrector. "
-        "Answer only by providing the code. "
-        "Do not explain what the app and code do. "
-        "Analyze the following streamlit code part and provide a validated code that can run. "
-        "Make sure that a def main(): part of function exists. "
-        "Validate that the decorator  @st.experimental_fragment and not another decorator exists on top of the def main(): part \n\n"
+        "You are a summarizer. " "Make the summary of the given text.  \n\n"
     )
     # system_prompt = "<|im_start|>system\n" + system_prompt_content + "<|im_end|>"
     system_prompt = (
@@ -156,13 +150,15 @@ def generate_arctic_response():
     prompt_str = "\n".join(prompt)
 
     if get_num_tokens(prompt_str) >= 4096:
-        st.error(
-            "Conversation length too long. Please keep it under 4096 tokens. Please clear memory."
-        )
-        st.sidebar.button(
-            "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
-        )
-        st.stop()
+        handle_message_overflow()
+
+        # st.error(
+        #     "Conversation length too long. Please keep it under 4096 tokens. Please clear memory."
+        # )
+        # st.sidebar.button(
+        #     "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
+        # )
+        # st.stop()
 
     st.sidebar.button(
         "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
@@ -247,3 +243,29 @@ def check_syntax(code):
         return True, ""
     except SyntaxError as e:
         return False, str(e)
+
+
+def summarize_messages(messages):
+    # Concatenate all previous messages
+    summary = ""
+    for message in messages:
+        if message["role"] == "user":
+            summary += f"User: {message['content']}\n"
+        else:
+            summary += f"Assistant: {message['content']}\n"
+    # Use LLM to summarize the concatenated messages
+    return summary_text(summary)
+
+
+def handle_message_overflow():
+    # Summarize the previous messages using the LLM
+    summary = summary_text(summarize_messages(st.session_state.messages[:-2]))
+
+    # Keep the last two messages
+    last_two_messages = st.session_state.messages[-2:]
+
+    # Update the session state messages with the summary and last two messages
+    st.session_state.messages = [
+        {"role": "assistant", "content": summary},
+        *last_two_messages,
+    ]
