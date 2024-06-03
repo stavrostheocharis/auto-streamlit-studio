@@ -3,6 +3,9 @@ import replicate
 from transformers import AutoTokenizer
 import re
 import tempfile
+import time
+import os
+import ast
 
 
 def extract_code_from_answer(content):
@@ -25,10 +28,14 @@ def get_script(response):
     if code_block:
         code = code_block.group(1)
 
-        # Write the code to a .py file
-        with open("streamlit_app.py", "w") as file:
+        # Create a temporary file
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".py")
+        with open(temp_file.name, "w") as file:
             file.write(code)
-        st.balloons()
+
+        # Save the temporary file path in session state
+        st.session_state.temp_file_path = temp_file.name
+
         print("Code extracted and written to streamlit_app.py")
         return True
     else:
@@ -171,3 +178,72 @@ def generate_arctic_response():
         },
     ):
         yield str(event)
+
+
+def handle_import_error(e):
+    """Handle ImportError and attempt to regenerate response."""
+    error_message = f"Error importing streamlit_app: {e}"
+
+    if "error_count" not in st.session_state:
+        st.session_state.error_count = 0
+
+    st.session_state.error_count += 1
+
+    if st.session_state.error_count <= 3:
+        st.error(error_message)
+
+        # Display a spinner for a short duration
+        with st.spinner("Attempting to resolve the error..."):
+            time.sleep(2)
+
+        # Add the error message as a user message
+        st.session_state.messages.append({"role": "user", "content": error_message})
+
+        # Rerun the app to process the new user message
+        st.rerun()
+    else:
+        st.error("Failed to resolve the error after several attempts.")
+        st.session_state.error_count = 0  # Reset the error count
+
+
+def delete_temp_file():
+    """Delete the temporary file and show a confirmation dialog."""
+    if (
+        "temp_file_path" in st.session_state
+        and st.session_state.temp_file_path
+        and os.path.exists(st.session_state.temp_file_path)
+    ):
+        delete_button = st.button("Delete app file", key="delete")
+        if delete_button:
+            delete_confirmation()
+
+
+@st.experimental_dialog("Confirm Deletion")
+def delete_confirmation():
+    st.write("You are going to delete the created app file, are you sure?")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Yes, delete it"):
+            if (
+                "temp_file_path" in st.session_state
+                and st.session_state.temp_file_path
+                and os.path.exists(st.session_state.temp_file_path)
+            ):
+                os.remove(st.session_state.temp_file_path)
+                st.session_state.temp_file_path = None
+                st.success("Temporary file deleted successfully.")
+            st.session_state.confirm_delete = False
+            st.rerun()
+    with col2:
+        if st.button("No, keep it"):
+            st.session_state.confirm_delete = False
+            st.rerun()
+
+
+def check_syntax(code):
+    try:
+        ast.parse(code)
+        return True, ""
+    except SyntaxError as e:
+        return False, str(e)

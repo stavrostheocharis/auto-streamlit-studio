@@ -3,18 +3,36 @@ import os
 import sys
 import toml
 import importlib
-from utils import get_script, generate_arctic_response, clear_chat_history
+from utils import (
+    get_script,
+    generate_arctic_response,
+    clear_chat_history,
+    handle_import_error,
+    delete_temp_file,
+)
+import time
+import uuid
+from code_editor import display_code_editor
+from session_handler import check_session_expiry
 
 # App title
 st.set_page_config(page_title="Auto-streamlit", page_icon="🤖", layout="wide")
 info = toml.load("info.toml")
 
+# Initialize session ID and check expiry
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
+check_session_expiry()
+
 
 if "rerun" not in st.session_state.keys():
     st.session_state.rerun = False
 
+if "retry_count" not in st.session_state:
+    st.session_state.retry_count = 0
 
-def display_sidebar_ui():
+
+def display_main_sidebar_ui():
     with st.sidebar:
         st.title("Auto-streamlit")
         tool_description = info["tool_description"]
@@ -44,7 +62,7 @@ if "messages" not in st.session_state.keys():
         }
     ]
 
-display_sidebar_ui()
+display_main_sidebar_ui()
 with st.sidebar:
     if prompt := st.chat_input():
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -62,6 +80,8 @@ with st.sidebar:
         created_file = get_script(st.session_state.messages[-1])
         if created_file:
             st.session_state.rerun = True
+            st.balloons()  # Show balloons here
+            time.sleep(2)  # Add a delay of 2 seconds
             st.rerun()
 
     col1, col2 = st.columns(2)
@@ -79,9 +99,12 @@ with st.sidebar:
                 disabled=True,
             )
     with col2:
-        file_path = "streamlit_app.py"
-        if os.path.exists(file_path):
-            with open(file_path, "r") as file:
+        if (
+            "temp_file_path" in st.session_state
+            and st.session_state.temp_file_path
+            and os.path.exists(st.session_state.temp_file_path)
+        ):
+            with open(st.session_state.temp_file_path, "r") as file:
                 btn = st.download_button(
                     label="Download file",
                     data=file.read(),
@@ -96,21 +119,37 @@ with st.sidebar:
                 mime="text/x-python",
                 disabled=True,
             )
+    delete_temp_file()
+    developer_box = st.checkbox("Trust me, I'm a developer", key="dev")
 
-print(st.session_state.messages, " st.session_state.messages")
-if os.path.exists(file_path):
-    try:
-        # Import the module dynamically
-        if "streamlit_app" in sys.modules:
-            streamlit_app = importlib.reload(sys.modules["streamlit_app"])
-        else:
-            streamlit_app = importlib.import_module("streamlit_app")
-        streamlit_app.main()
+    if developer_box:
+        display_code_editor()
 
-        if st.session_state.rerun:
-            st.session_state.rerun = False
-            st.rerun()
-    except ImportError as e:
-        st.error(f"Error importing streamlit_app: {e}")
+if (
+    "temp_file_path" in st.session_state
+    and st.session_state.temp_file_path
+    and os.path.exists(st.session_state.temp_file_path)
+):
+    file_path = st.session_state.temp_file_path
+    if os.path.exists(file_path):
+        try:
+            # Import the module dynamically from the temporary file
+            module_name = os.path.basename(file_path).replace(".py", "")
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            streamlit_app = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = streamlit_app
+            spec.loader.exec_module(streamlit_app)
+
+            streamlit_app.main()
+
+            if st.session_state.rerun:
+                st.session_state.rerun = False
+                st.balloons()  # Show balloons here
+                time.sleep(2)  # Add a delay of 2 seconds
+                st.rerun()
+        except Exception as e:
+            handle_import_error(e)
+    else:
+        print(f"The file {file_path} does not exist.")
 else:
-    print(f"The file {file_path} does not exist.")
+    print("No temporary file path found in session state.")
