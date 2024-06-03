@@ -2,6 +2,7 @@ import streamlit as st
 import replicate
 from transformers import AutoTokenizer
 import re
+import tempfile
 
 
 def extract_code_from_answer(content):
@@ -150,6 +151,9 @@ def generate_arctic_response():
     if get_num_tokens(prompt_str) >= 4096:
         st.error(
             "Conversation length too long. Please keep it under 4096 tokens. Please clear memory."
+        )
+        st.sidebar.button(
+            "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
         )
         st.stop()
 
