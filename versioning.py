@@ -4,7 +4,7 @@ import re
 import tempfile
 import os
 import streamlit as st
-from utils import get_script, delete_temp_file
+from utils import get_script
 
 
 def save_version():

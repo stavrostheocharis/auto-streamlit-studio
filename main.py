@@ -7,7 +7,6 @@ from utils import (
     get_script,
     generate_arctic_response,
     clear_chat_history,
-    delete_temp_file,
     execute_user_code,
     display_code_templates,
 )
