@@ -1,6 +1,5 @@
 import streamlit as st
 import os
-import sys
 import toml
 from versioning import display_version_control
 from utils import (
@@ -11,7 +10,6 @@ from utils import (
     display_code_templates,
 )
 import time
-import uuid
 from code_editor import display_code_editor
 from session_handler import initialize_session
 
