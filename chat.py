@@ -43,7 +43,7 @@ def get_and_process_prompt():
             st.write_stream(response)
 
     if st.session_state.chat_aborted:
-        st.button("Reset chat", on_click=clear_chat_history, key="clear_chat_history")
+        # st.button("Reset chat", on_click=clear_chat_history, key="clear_chat_history")
         st.chat_input(disabled=True)
 
     elif prompt := st.chat_input():

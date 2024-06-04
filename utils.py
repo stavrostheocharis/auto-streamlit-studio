@@ -6,6 +6,16 @@ import tempfile
 import time
 import os
 import ast
+import logging
+import importlib
+import sys
+
+# Set up logging
+logging.basicConfig(
+    filename="auto_streamlit.log",
+    level=logging.DEBUG,
+    format="%(asctime)s:%(levelname)s:%(message)s",
+)
 
 
 def extract_code_from_answer(content):
@@ -160,9 +170,9 @@ def generate_arctic_response():
         # )
         # st.stop()
 
-    st.sidebar.button(
-        "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
-    )
+    # st.sidebar.button(
+    #     "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
+    # )
 
     for event in replicate.stream(
         "meta/meta-llama-3-70b-instruct",
@@ -179,61 +189,16 @@ def generate_arctic_response():
 def handle_import_error(e):
     """Handle ImportError and attempt to regenerate response."""
     error_message = f"Error importing streamlit_app: {e}"
-
-    if "error_count" not in st.session_state:
-        st.session_state.error_count = 0
-
-    st.session_state.error_count += 1
-
-    if st.session_state.error_count <= 3:
-        st.error(error_message)
-
+    logging.error(error_message)
+    st.error(error_message)
+    resolve_error = st.button("Resolve error", key="resolve_error")
+    if resolve_error:
         # Display a spinner for a short duration
         with st.spinner("Attempting to resolve the error..."):
             time.sleep(2)
-
-        # Add the error message as a user message
-        st.session_state.messages.append({"role": "user", "content": error_message})
-
-        # Rerun the app to process the new user message
-        st.rerun()
-    else:
-        st.error("Failed to resolve the error after several attempts.")
-        st.session_state.error_count = 0  # Reset the error count
-
-
-def delete_temp_file():
-    """Delete the temporary file and show a confirmation dialog."""
-    if (
-        "temp_file_path" in st.session_state
-        and st.session_state.temp_file_path
-        and os.path.exists(st.session_state.temp_file_path)
-    ):
-        delete_button = st.button("Delete app file", key="delete")
-        if delete_button:
-            delete_confirmation()
-
-
-@st.experimental_dialog("Confirm Deletion")
-def delete_confirmation():
-    st.write("You are going to delete the created app file, are you sure?")
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("Yes, delete it"):
-            if (
-                "temp_file_path" in st.session_state
-                and st.session_state.temp_file_path
-                and os.path.exists(st.session_state.temp_file_path)
-            ):
-                os.remove(st.session_state.temp_file_path)
-                st.session_state.temp_file_path = None
-                st.success("Temporary file deleted successfully.")
-            st.session_state.confirm_delete = False
-            st.rerun()
-    with col2:
-        if st.button("No, keep it"):
-            st.session_state.confirm_delete = False
+            # Add the error message as a user message
+            st.session_state.messages.append({"role": "user", "content": error_message})
+            # Rerun the app to process the new user message
             st.rerun()
 
 
@@ -269,3 +234,110 @@ def handle_message_overflow():
         {"role": "assistant", "content": summary},
         *last_two_messages,
     ]
+
+
+def execute_user_code(file_path):
+    if os.path.exists(file_path):
+        try:
+            module_name = os.path.basename(file_path).replace(".py", "")
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            streamlit_app = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = streamlit_app
+            spec.loader.exec_module(streamlit_app)
+
+            if hasattr(streamlit_app, "main"):
+                streamlit_app.main()
+            else:
+                st.error("The script does not contain a main() function.")
+
+            if st.session_state.rerun:
+                st.session_state.rerun = False
+                st.balloons()
+                time.sleep(2)
+                st.rerun()
+        except Exception as e:
+            handle_import_error(e)
+    else:
+        st.error("The script file does not exist.")
+
+
+def validate_code_safety(code):
+    safe_builtins = {"print", "range", "len"}
+    node = ast.parse(code)
+    for n in ast.walk(node):
+        if isinstance(n, ast.Call):
+            if not isinstance(n.func, ast.Name) or n.func.id not in safe_builtins:
+                return False, f"Disallowed function call detected: {n.func.id}"
+    return True, ""
+
+
+def display_code_templates():
+    templates = [
+        {
+            "name": "Basic App",
+            "description": "Create a basic demo app with a title and some small inputs.",
+        },
+        {
+            "name": "DataFrame Example",
+            "description": "Create an app demonstrating capabilities with dataframes.",
+        },
+        {
+            "name": "Interactive Widgets",
+            "description": "Create an app with various interactive widgets.",
+        },
+        {
+            "name": "File Uploader",
+            "description": "Create an app to upload and display a file.",
+        },
+        {
+            "name": "Line Chart Example",
+            "description": "Create an app displaying a line chart and some small analysis.",
+        },
+        {
+            "name": "Image Display",
+            "description": "Create an app to display an image and small modifications.",
+        },
+        {
+            "name": "Plotly Chart Example",
+            "description": "Create an app displaying different capabilities of Plotly",
+        },
+        {
+            "name": "MNIST dataset",
+            "description": "Create an app visualising the MNIST dataset and training a model, showcasing basic results",
+        },
+        {
+            "name": "Explainable AI",
+            "description": "Create an app visualising explainable AI with Lime in a small dataset with a small trained model.",
+        },
+        {
+            "name": "SQL Query Example",
+            "description": "Create an app to run a SQL query.",
+        },
+    ]
+
+    template_names = [template["name"] for template in templates]
+
+    st.sidebar.markdown("## App Templates")
+    with st.expander(label="Open template selection list"):
+        # Initialize selected_template in session state
+        if "selected_template" not in st.session_state:
+            st.session_state.selected_template = ""
+
+        with st.form("template_form"):
+            selected_template_name = st.selectbox(
+                label="",
+                options=[""] + template_names,
+                index=0,
+            )
+            submitted = st.form_submit_button("Submit")
+            if submitted and selected_template_name:
+                selected_template = next(
+                    template
+                    for template in templates
+                    if template["name"] == selected_template_name
+                )
+                st.session_state.messages.append(
+                    {"role": "user", "content": selected_template["description"]}
+                )
+                st.session_state.selected_template = selected_template_name
+                st.rerun()

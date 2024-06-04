@@ -6,20 +6,29 @@ from utils import check_syntax
 
 
 def display_code_editor():
-    if (
-        "temp_file_path" in st.session_state
-        and st.session_state.temp_file_path
-        and os.path.exists(st.session_state.temp_file_path)
-    ):
-        with open(st.session_state.temp_file_path, "r") as file:
-            initial_code = file.read()
-    else:
-        initial_code = "# Your code will appear here."
+    st.sidebar.markdown("## Developer")
+    with st.expander(label="Trust me, I'm a developer"):
+        if (
+            "temp_file_path" in st.session_state
+            and st.session_state.temp_file_path
+            and os.path.exists(st.session_state.temp_file_path)
+        ):
+            with open(st.session_state.temp_file_path, "r") as file:
+                initial_code = file.read()
+        else:
+            initial_code = "# Your code will appear here."
 
-    # Display the Ace Editor
-    with st.sidebar:
+        # Display the Ace Editor
+
         edited_code = st_ace(
-            value=initial_code, language="python", theme="monokai", key="ace_editor"
+            value=initial_code,
+            language="python",
+            theme="monokai",
+            key="ace_editor",
+            show_gutter=True,
+            show_print_margin=True,
+            wrap=True,
+            auto_update=False,
         )
 
         # Button to save the edited code
