@@ -4,19 +4,24 @@ import toml
 from versioning import display_version_control
 from utils import (
     get_script,
-    generate_arctic_response,
+    generate_response,
     clear_chat_history,
     execute_user_code,
     display_code_templates,
+    api_token_input,
 )
+
+from voice import transcribe_audio_file, process_voice_command, convert_bytes_to_mp3
 import time
 from code_editor import display_code_editor
 from session_handler import initialize_session
+from audio_recorder_streamlit import audio_recorder
+
 
 # App title
-st.set_page_config(page_title="Auto-streamlit", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="AutoStreamlit Studio", page_icon="🦾", layout="wide")
 info = toml.load("info.toml")
-
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 initialize_session()
 
@@ -25,25 +30,12 @@ if "rerun" not in st.session_state.keys():
     st.session_state.rerun = False
 
 
-def api_token_input():
-    if "REPLICATE_API_TOKEN" in st.secrets:
-        print("Replicate API token found in secrets.")
-    else:
-        replicate_api = st.text_input("Enter Replicate API token:", type="password")
-        if not (replicate_api.startswith("r8_") and len(replicate_api) == 40):
-            st.warning("Please enter your Replicate API token.", icon="⚠️")
-            st.markdown(
-                "**Don't have an API token?** Head over to [Replicate](https://replicate.com) to sign up for one."
-            )
-        os.environ["REPLICATE_API_TOKEN"] = replicate_api
-
-
 def display_main_sidebar_ui():
     with st.sidebar:
-        st.title("Auto-streamlit")
+        st.title("AutoStreamlit Studio")
         tool_description = info["tool_description"]
 
-        with st.expander("About Auto-Streamlit"):
+        with st.expander("About AutoStreamlit Studio"):
             st.title(tool_description["title"])
             st.markdown(tool_description["description"])
 
@@ -58,7 +50,9 @@ def display_main_sidebar_ui():
             """
             )
 
-        api_token_input()
+        provider, client, authed = api_token_input()
+
+        return provider, client, authed
 
 
 if "messages" not in st.session_state.keys():
@@ -70,11 +64,12 @@ if "messages" not in st.session_state.keys():
     ]
 
 
-def generate_response_if_needed():
+def generate_response_if_needed(provider, client):
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
-            response = generate_arctic_response()
+            response = generate_response(provider, client)
             full_response = st.write_stream(response)
+
         message = {"role": "assistant", "content": full_response}
         st.session_state.messages.append(message)
         created_file = get_script(st.session_state.messages[-1])
@@ -85,7 +80,44 @@ def generate_response_if_needed():
             st.rerun()
 
 
-def handle_buttons():
+def handle_buttons(provider, client):
+
+    if provider == "OpenAI":
+        if "new_recording_processed" not in st.session_state:
+            st.session_state.new_recording_processed = False
+
+        audio_bytes = audio_recorder(
+            "Click to record",
+            # recording_color="#e8b62c",
+            # energy_threshold=0.01,
+            # neutral_color="#303030",
+            icon_size="2x",
+            auto_start=False,
+            key="audio_rec",
+        )
+
+        # if "last_audio_bytes" in st.session_state:
+        #     st.audio(st.session_state["last_audio_bytes"], format="audio/wav")
+
+        if "last_audio_bytes" not in st.session_state:
+            st.session_state["last_audio_bytes"] = None
+
+        # if "last_transcription" in st.session_state:
+        #     st.write("The last transcription was: ", st.session_state["last_transcription"])
+
+        if audio_bytes and audio_bytes != st.session_state["last_audio_bytes"]:
+            st.session_state["last_audio_bytes"] = audio_bytes
+            audio = convert_bytes_to_mp3(audio_bytes)
+            trans_script = transcribe_audio_file(audio, client).text
+            st.session_state["last_transcription"] = trans_script
+            st.session_state.new_recording_processed = False
+            process_voice_command(trans_script)
+            st.rerun()
+
+        if not st.session_state.new_recording_processed:
+            generate_response_if_needed(provider, client)
+            st.session_state.new_recording_processed = True
+
     col1, col2 = st.columns(2)
     with col1:
         if len(st.session_state.messages) > 2:
@@ -121,29 +153,48 @@ def handle_buttons():
                 mime="text/x-python",
                 disabled=True,
             )
+
     # delete_temp_file()
 
 
-def setup_sidebar():
-    display_main_sidebar_ui()
-    with st.sidebar:
-        if prompt := st.chat_input():
+def display_chat_messages():
+    icons = {"assistant": "🤖", "user": "🧑‍💻"}
+
+    # Display the messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"], avatar=icons[message["role"]]):
+            st.write(message["content"])
+
+
+def chat(provider, client):
+    if prompt := st.chat_input():
+        with st.expander("Generating code...", expanded=True):
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user", avatar="🧑‍💻"):
                 st.write(prompt)
 
-        generate_response_if_needed()
-        handle_buttons()
-        st.divider()
+            generate_response_if_needed(provider, client)
 
-        display_code_templates()
-        # Ensure the dropdown resets after selection
-        if st.session_state.get("selected_template"):
-            st.session_state.selected_template = ""
 
-        display_version_control()
+def setup_sidebar():
+    provider, client, authed = display_main_sidebar_ui()
+    st.sidebar.divider()
+    if authed:
+        with st.sidebar:
+            with st.expander("Chat history"):
+                display_chat_messages()
+            chat(provider, client)
+            handle_buttons(provider, client)
+            st.divider()
 
-        display_code_editor()
+            display_code_templates()
+            # Ensure the dropdown resets after selection
+            if st.session_state.get("selected_template"):
+                st.session_state.selected_template = ""
+
+            display_version_control()
+
+            display_code_editor()
 
 
 setup_sidebar()
@@ -155,7 +206,7 @@ if (
     and os.path.exists(st.session_state.temp_file_path)
 ):
     file_path = st.session_state.temp_file_path
-
+    print(st.session_state.messages, "sds")
     execute_user_code(file_path)
 
 else:

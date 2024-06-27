@@ -10,21 +10,11 @@ import logging
 import importlib
 import sys
 from openai import OpenAI
-from replicate.client import Client
-
-
-# Set up logging
-logging.basicConfig(
-    filename="auto_streamlit.log",
-    level=logging.DEBUG,
-    format="%(asctime)s:%(levelname)s:%(message)s",
-)
 
 
 def api_token_input():
     provider = st.sidebar.selectbox("Choose provider", ["OpenAI", "Replicate"])
     client = None
-    authed = False
     if provider == "OpenAI":
         if "OPENAI_API_TOKEN" in st.secrets:
             openai_api_key = st.secrets["OPENAI_API_TOKEN"]
@@ -35,11 +25,9 @@ def api_token_input():
         if openai_api_key:
             os.environ["OPENAI_API_TOKEN"] = openai_api_key
             client = OpenAI(api_key=os.environ["OPENAI_API_TOKEN"])
-            authed = True
     else:
         if "REPLICATE_API_TOKEN" in st.secrets:
             print("Replicate API token found in secrets.")
-            replicate_api = st.secrets["REPLICATE_API_TOKEN"]
         else:
             replicate_api = st.text_input("Enter Replicate API token:", type="password")
             if not (replicate_api.startswith("r8_") and len(replicate_api) == 40):
@@ -47,12 +35,17 @@ def api_token_input():
                 st.markdown(
                     "**Don't have an API token?** Head over to [Replicate](https://replicate.com) to sign up for one."
                 )
-        if replicate_api:
             os.environ["REPLICATE_API_TOKEN"] = replicate_api
-            client = Client(api_token=os.environ["REPLICATE_API_TOKEN"])
-            authed = True
 
-    return provider, client, authed
+    return provider, client
+
+
+# Set up logging
+logging.basicConfig(
+    filename="auto_streamlit.log",
+    level=logging.DEBUG,
+    format="%(asctime)s:%(levelname)s:%(message)s",
+)
 
 
 def extract_code_from_answer(content):
@@ -113,104 +106,69 @@ def clear_chat_history():
     st.session_state.chat_aborted = False
 
 
-def summary_text(query, provider, client):
-
+def summary_text(query):
     prompt = []
     system_prompt_content = (
-        "You are a summarizer. " "Make the summary of the given text \n\n"
+        "You are a summarizer. " "Make the summary of the given text.  \n\n"
     )
-
-    if provider == "OpenAI":
-        system_prompt = {"role": "system", "content": system_prompt_content}
-        prompt.append(system_prompt)
-        query_prompt = {"role": "user", "content": query}
-        prompt.append(query_prompt)
-        prompt.append({"role": "assistant", "content": ""})
-        response = client.chat.completions.create(model="gpt-4o", messages=prompt)
-
-        return response.choices[0].message.content
-    else:
-        system_prompt = (
-            "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
-            + system_prompt_content
-            + "<|eot_id|>"
-        )
-        prompt.append(system_prompt)
-        query_prompt = (
-            "<|start_header_id|>user<|end_header_id|>\n\n" + query + "<|eot_id|>"
-        )
-        prompt.append(query_prompt)
-        prompt.append("<|start_header_id|>assistant<|end_header_id|>\n\n")
-        prompt.append("")
-        prompt_str = "\n".join(prompt)
-        response = ""
-
-        for event in replicate.stream(
-            "meta/meta-llama-3-70b-instruct",
-            input={
-                "prompt": prompt_str,
-                "prompt_template": r"{prompt}",
-                "temperature": 0.2,
-                "top_p": 0.9,
-            },
-        ):
-            response += str(event)
-
-        return response.strip()
-
-
-@st.cache_data
-def initialise_system_prompt(provider):
-
+    # system_prompt = "<|im_start|>system\n" + system_prompt_content + "<|im_end|>"
     system_prompt = (
-        "You are an experienced python software engineer. "
-        "Answer only by providing the code. "
-        "Do not explain what the app and code do. "
-        "The app has to be created with streamlit library. "
-        "The app has to be created with a def main(): function "
-        "Never use set_page_config() in your code "
-        "The code you produce should be able to run by itself and do not leave parts to be added later by user or other code parts. "
-        "You should not try to open files that you are not sure if they exist in a path. "
-        "When you create widgets you have to inlcude each time a different unique `key` for each one of them. "
-        "Use the following pieces of context and provide only the python code: \n\n"
+        "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+        + system_prompt_content
+        + "<|eot_id|>"
     )
+    prompt.append(system_prompt)
 
-    if provider == "OpenAI":
-        return {"role": "system", "content": system_prompt}
+    # query_prompt = "<|im_start|>user\n" + query + "<|im_end|>"
+    query_prompt = "<|start_header_id|>user<|end_header_id|>\n\n" + query + "<|eot_id|>"
+    prompt.append(query_prompt)
 
-    else:
-        return (
-            "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
-            + system_prompt
-            + "<|eot_id|>"
-        )
+    # prompt.append("<|im_start|>assistant")
+    prompt.append("<|start_header_id|>assistant<|end_header_id|>\n\n")
+    prompt.append("")
+    prompt_str = "\n".join(prompt)
+
+    response = ""
+    for event in replicate.stream(
+        "meta/meta-llama-3-70b-instruct",
+        input={
+            "prompt": prompt_str,
+            "prompt_template": r"{prompt}",
+            "temperature": 0.2,
+            "top_p": 0.9,
+        },
+    ):
+        response += str(event)
+
+    return response.strip()
 
 
-def setup_openai_prompt(client):
-    system_prompt = initialise_system_prompt("OpenAI")
+system_prompt = (
+    "You are an experienced python software engineer. "
+    "Answer only by providing the code. "
+    "Do not explain what the app and code do. "
+    "The app has to be created with streamlit library. "
+    "The app has to be created with a def main(): function "
+    # "In the previous like of the the main() function you have always to include the decorator: @st.experimental_fragment"
+    "The code you produce should be able to run by itself and do not leave parts to be added later by user or other code parts. "
+    "You should not try to open files that you are not sure if they exist in a path. "
+    "When you create widgets you have to inlcude each time a different unique `key` for each one of them. "
+    "Use the following pieces of context and provide only the python code: \n\n"
+)
+
+system_prompt = (
+    "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+    + system_prompt
+    + "<|eot_id|>"
+)
+# system_prompt = "<|im_start|>system\n" + system_prompt + "<|im_end|>"
+
+
+def generate_response():
     prompt = [system_prompt]
     for dict_message in st.session_state.messages:
         if dict_message["role"] == "user":
-            prompt.append({"role": "user", "content": dict_message["content"]})
-        else:
-            prompt.append({"role": "assistant", "content": dict_message["content"]})
-
-    prompt.append({"role": "assistant", "content": ""})
-    for item in prompt:
-        print(item, "dsdsdsdsd")
-    prompt_str = "\n".join(item["content"] for item in prompt)
-
-    if get_num_tokens(prompt_str) >= 4096:
-        handle_message_overflow("OpenAI", client)
-
-    return prompt
-
-
-def setup_replicate_prompt(client):
-    system_prompt = initialise_system_prompt("replicate")
-    prompt = [system_prompt]
-    for dict_message in st.session_state.messages:
-        if dict_message["role"] == "user":
+            # prompt.append("<|im_start|>user\n" + dict_message["content"] + "<|im_end|>")
             prompt.append(
                 "<|start_header_id|>user<|end_header_id|>\n\n"
                 + dict_message["content"]
@@ -222,34 +180,27 @@ def setup_replicate_prompt(client):
                 + dict_message["content"]
                 + "<|eot_id|>"
             )
+            # prompt.append(
+            #     "<|im_start|>assistant\n" + dict_message["content"] + "<|im_end|>"
+            # )
+    # prompt.append("<|im_start|>assistant")
     prompt.append("<|start_header_id|>assistant<|end_header_id|>")
     prompt.append("")
     prompt_str = "\n".join(prompt)
 
     if get_num_tokens(prompt_str) >= 4096:
-        handle_message_overflow("replicate", client)
+        handle_message_overflow()
 
-    return prompt_str
-
-
-def generate_response(provider, client):
-
-    if provider == "OpenAI":
-        prompt = setup_openai_prompt(client)
-        response = client.chat.completions.create(model="gpt-4o", messages=prompt)
-        yield response.choices[0].message.content
-    else:
-        prompt = setup_replicate_prompt(client)
-        for event in client.stream(
-            "meta/meta-llama-3-70b-instruct",
-            input={
-                "prompt": prompt,
-                "prompt_template": r"{prompt}",
-                "temperature": 0.2,
-                "top_p": 0.9,
-            },
-        ):
-            yield str(event)
+    for event in replicate.stream(
+        "meta/meta-llama-3-70b-instruct",
+        input={
+            "prompt": prompt_str,
+            "prompt_template": r"{prompt}",
+            "temperature": 0.2,
+            "top_p": 0.9,
+        },
+    ):
+        yield str(event)
 
 
 def handle_import_error(e):
@@ -276,7 +227,7 @@ def check_syntax(code):
         return False, str(e)
 
 
-def summarize_messages(messages, provider, client):
+def summarize_messages(messages):
     # Concatenate all previous messages
     summary = ""
     for message in messages:
@@ -285,12 +236,12 @@ def summarize_messages(messages, provider, client):
         else:
             summary += f"Assistant: {message['content']}\n"
     # Use LLM to summarize the concatenated messages
-    return summary_text(summary, provider, client)
+    return summary_text(summary)
 
 
-def handle_message_overflow(provider, client):
+def handle_message_overflow():
     # Summarize the previous messages using the LLM
-    summary = summarize_messages(st.session_state.messages[:-2], provider, client)
+    summary = summary_text(summarize_messages(st.session_state.messages[:-2]))
 
     # Keep the last two messages
     last_two_messages = st.session_state.messages[-2:]

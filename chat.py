@@ -1,6 +1,5 @@
 import streamlit as st
-from sentence_transformers import CrossEncoder
-from utils import generate_arctic_response, analyze_query, clear_chat_history
+from utils import generate_response, analyze_query, clear_chat_history
 
 TEMPERATURE = 0.5
 TOP_P = 0.9
@@ -39,7 +38,7 @@ def get_and_process_prompt():
         analyzed_query = user_prompt
         # Display the assistant's response incrementally
         with st.chat_message("assistant", avatar="🤖"):
-            response = generate_arctic_response(analyzed_query, TEMPERATURE, TOP_P)
+            response = generate_response(analyzed_query, TEMPERATURE, TOP_P)
             st.write_stream(response)
 
     if st.session_state.chat_aborted:
