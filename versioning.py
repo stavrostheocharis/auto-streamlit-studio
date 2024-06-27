@@ -28,7 +28,7 @@ def delete_temp_file():
         and st.session_state.temp_file_path
         and os.path.exists(st.session_state.temp_file_path)
     ):
-        delete_button = st.button("Reset app", key="delete")
+        delete_button = st.button("Reset app", key="delete", use_container_width=True)
         if delete_button:
             delete_confirmation()
 
@@ -41,7 +41,9 @@ def delete_confirmation():
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("Yes, delete them", key="validate_delete"):
+        if st.button(
+            "Yes, delete them", key="validate_delete", use_container_width=True
+        ):
             if (
                 "temp_file_path" in st.session_state
                 and st.session_state.temp_file_path
@@ -59,7 +61,7 @@ def delete_confirmation():
                 st.rerun()
 
     with col2:
-        if st.button("No, keep them", key="cancel_delete"):
+        if st.button("No, keep them", key="cancel_delete", use_container_width=True):
             st.session_state.confirm_delete = False
             st.rerun()
 
@@ -73,14 +75,14 @@ def display_version_control():
         col1, col2 = st.columns([2, 4])
 
         with col1:
-            st.button("Save Version", on_click=save_version)
+            st.button("Save Version", on_click=save_version, use_container_width=True)
             delete_temp_file()
         with col2:
             if "versions" in st.session_state and st.session_state.versions:
                 version = st.selectbox(
                     "Select a version", range(len(st.session_state.versions))
                 )
-                if st.button("Load Version"):
+                if st.button("Load Version", use_container_width=True):
                     selected_version_code = st.session_state.versions[version]
                     with open(st.session_state.temp_file_path, "w") as file:
                         file.write(selected_version_code)

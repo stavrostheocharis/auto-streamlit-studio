@@ -8,8 +8,8 @@ from utils import (
     clear_chat_history,
     execute_user_code,
     display_code_templates,
-    api_token_input,
 )
+from src.utils.key_management import api_token_input
 
 from voice import transcribe_audio_file, process_voice_command, convert_bytes_to_mp3
 import time
@@ -35,7 +35,9 @@ def display_main_sidebar_ui():
         st.title("AutoStreamlit Studio")
         tool_description = info["tool_description"]
 
-        with st.expander("About AutoStreamlit Studio"):
+        with st.expander(
+            "About AutoStreamlit Studio",
+        ):
             st.title(tool_description["title"])
             st.markdown(tool_description["description"])
 
@@ -125,12 +127,14 @@ def handle_buttons(provider, client):
                 "Clear chat history",
                 on_click=clear_chat_history,
                 key="clear_chat_history",
+                use_container_width=True,
             )
         else:
             st.button(
                 "Clear chat history",
                 key="clear_chat_history",
                 disabled=True,
+                use_container_width=True,
             )
     with col2:
         if (
@@ -144,6 +148,7 @@ def handle_buttons(provider, client):
                     data=file.read(),
                     file_name="streamlit_app.py",
                     mime="text/x-python",
+                    use_container_width=True,
                 )
         else:
             st.download_button(
@@ -166,14 +171,21 @@ def display_chat_messages():
             st.write(message["content"])
 
 
-def chat(provider, client):
+def written_chat(provider, client):
+    """This function will be triggered by the main chat part of the app"""
     if prompt := st.chat_input():
+        st.session_state.messages.append({"role": "user", "content": prompt})
         with st.expander("Generating code...", expanded=True):
-            st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user", avatar="🧑‍💻"):
                 st.write(prompt)
 
             generate_response_if_needed(provider, client)
+
+
+def other_chat(provider, client):
+    """This function will be triggered by other chat parts like voice or template"""
+    with st.expander("Generating code...", expanded=True):
+        generate_response_if_needed(provider, client)
 
 
 def setup_sidebar():
@@ -183,7 +195,8 @@ def setup_sidebar():
         with st.sidebar:
             with st.expander("Chat history"):
                 display_chat_messages()
-            chat(provider, client)
+            written_chat(provider, client)
+            other_chat(provider, client)
             handle_buttons(provider, client)
             st.divider()
 
@@ -206,7 +219,6 @@ if (
     and os.path.exists(st.session_state.temp_file_path)
 ):
     file_path = st.session_state.temp_file_path
-    print(st.session_state.messages, "sds")
     execute_user_code(file_path)
 
 else:

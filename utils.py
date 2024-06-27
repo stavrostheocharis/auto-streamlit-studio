@@ -22,7 +22,9 @@ logging.basicConfig(
 
 
 def api_token_input():
-    provider = st.sidebar.selectbox("Choose provider", ["OpenAI", "Replicate"])
+    provider = st.sidebar.selectbox(
+        "Choose provider", ["OpenAI", "Replicate"], placeholder="OpenAI"
+    )
     client = None
     authed = False
     if provider == "OpenAI":
@@ -31,11 +33,15 @@ def api_token_input():
             print("OpenAI API token found in secrets.")
         else:
             openai_api_key = st.text_input("Enter OpenAI API token:", type="password")
-
-        if openai_api_key:
-            os.environ["OPENAI_API_TOKEN"] = openai_api_key
-            client = OpenAI(api_key=os.environ["OPENAI_API_TOKEN"])
-            authed = True
+            if not (openai_api_key.startswith("sk-") and len(replicate_api) == 51):
+                st.warning("Please enter your OpenAI API token.", icon="⚠️")
+                st.markdown(
+                    "**Don't have an API token?** Head over to [OpenAI](https://openai.com/index/openai-api/) to sign up for one."
+                )
+            else:
+                os.environ["OPENAI_API_TOKEN"] = openai_api_key
+                client = OpenAI(api_key=os.environ["OPENAI_API_TOKEN"])
+                authed = True
     else:
         if "REPLICATE_API_TOKEN" in st.secrets:
             print("Replicate API token found in secrets.")
@@ -47,10 +53,10 @@ def api_token_input():
                 st.markdown(
                     "**Don't have an API token?** Head over to [Replicate](https://replicate.com) to sign up for one."
                 )
-        if replicate_api:
-            os.environ["REPLICATE_API_TOKEN"] = replicate_api
-            client = Client(api_token=os.environ["REPLICATE_API_TOKEN"])
-            authed = True
+            else:
+                os.environ["REPLICATE_API_TOKEN"] = replicate_api
+                client = Client(api_token=os.environ["REPLICATE_API_TOKEN"])
+                authed = True
 
     return provider, client, authed
 
@@ -196,8 +202,6 @@ def setup_openai_prompt(client):
             prompt.append({"role": "assistant", "content": dict_message["content"]})
 
     prompt.append({"role": "assistant", "content": ""})
-    for item in prompt:
-        print(item, "dsdsdsdsd")
     prompt_str = "\n".join(item["content"] for item in prompt)
 
     if get_num_tokens(prompt_str) >= 4096:
@@ -207,7 +211,7 @@ def setup_openai_prompt(client):
 
 
 def setup_replicate_prompt(client):
-    system_prompt = initialise_system_prompt("replicate")
+    system_prompt = initialise_system_prompt("Replicate")
     prompt = [system_prompt]
     for dict_message in st.session_state.messages:
         if dict_message["role"] == "user":
@@ -227,7 +231,7 @@ def setup_replicate_prompt(client):
     prompt_str = "\n".join(prompt)
 
     if get_num_tokens(prompt_str) >= 4096:
-        handle_message_overflow("replicate", client)
+        handle_message_overflow("Replicate", client)
 
     return prompt_str
 
@@ -395,7 +399,7 @@ def display_code_templates():
                 options=[""] + template_names,
                 index=0,
             )
-            submitted = st.form_submit_button("Submit")
+            submitted = st.form_submit_button("Submit", use_container_width=True)
             if submitted and selected_template_name:
                 selected_template = next(
                     template
