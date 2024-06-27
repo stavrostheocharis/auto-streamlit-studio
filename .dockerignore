@@ -1,0 +1,35 @@
+# Ignore Python cache files
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+.venv
+env
+ENV
+
+# Ignore version control directories
+.git
+.gitignore
+
+# Ignore local configuration files
+.env
+
+# Ignore log files
+*.log
+
+# Ignore Streamlit specific files
+.streamlit
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore built distributions
+dist
+build
+*.egg-info
+
+# Ignore system files
+.DS_Store
