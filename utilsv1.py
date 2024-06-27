@@ -9,6 +9,36 @@ import ast
 import logging
 import importlib
 import sys
+from openai import OpenAI
+
+
+def api_token_input():
+    provider = st.sidebar.selectbox("Choose provider", ["OpenAI", "Replicate"])
+    client = None
+    if provider == "OpenAI":
+        if "OPENAI_API_TOKEN" in st.secrets:
+            openai_api_key = st.secrets["OPENAI_API_TOKEN"]
+            print("OpenAI API token found in secrets.")
+        else:
+            openai_api_key = st.text_input("Enter OpenAI API token:", type="password")
+
+        if openai_api_key:
+            os.environ["OPENAI_API_TOKEN"] = openai_api_key
+            client = OpenAI(api_key=os.environ["OPENAI_API_TOKEN"])
+    else:
+        if "REPLICATE_API_TOKEN" in st.secrets:
+            print("Replicate API token found in secrets.")
+        else:
+            replicate_api = st.text_input("Enter Replicate API token:", type="password")
+            if not (replicate_api.startswith("r8_") and len(replicate_api) == 40):
+                st.warning("Please enter your Replicate API token.", icon="⚠️")
+                st.markdown(
+                    "**Don't have an API token?** Head over to [Replicate](https://replicate.com) to sign up for one."
+                )
+            os.environ["REPLICATE_API_TOKEN"] = replicate_api
+
+    return provider, client
+
 
 # Set up logging
 logging.basicConfig(
@@ -73,7 +103,6 @@ def clear_chat_history():
             "content": "Hello! Provide me your requirements to build you a streamlit app!",
         }
     ]
-    # st.rerun()  # Ensure the chat history is cleared
     st.session_state.chat_aborted = False
 
 
@@ -135,7 +164,7 @@ system_prompt = (
 # system_prompt = "<|im_start|>system\n" + system_prompt + "<|im_end|>"
 
 
-def generate_arctic_response():
+def generate_response():
     prompt = [system_prompt]
     for dict_message in st.session_state.messages:
         if dict_message["role"] == "user":
@@ -161,18 +190,6 @@ def generate_arctic_response():
 
     if get_num_tokens(prompt_str) >= 4096:
         handle_message_overflow()
-
-        # st.error(
-        #     "Conversation length too long. Please keep it under 4096 tokens. Please clear memory."
-        # )
-        # st.sidebar.button(
-        #     "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
-        # )
-        # st.stop()
-
-    # st.sidebar.button(
-    #     "Clear chat history", on_click=clear_chat_history, key="clear_chat_history"
-    # )
 
     for event in replicate.stream(
         "meta/meta-llama-3-70b-instruct",

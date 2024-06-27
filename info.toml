@@ -1,7 +1,7 @@
 # config.toml
 
 [tool_description]
-title = "Auto-Streamlit"
+title = "AutoStreamlit Studio"
 description = """
-Introducing **Auto-Streamlit**, your intelligent assistant for effortlessly creating Streamlit applications! Simply provide your requirements through a prompt, and Auto-Streamlit takes care of the rest. It automatically generates, customizes, and runs a Streamlit app tailored to your specifications. Whether you need data visualization, interactive dashboards, or any other Streamlit functionality, Auto-Streamlit simplifies the process, turning your ideas into functional apps in no time. Empower your workflow with this innovative tool, designed to save time and enhance productivity for developers and non-developers alike.
+Introducing **AutoStreamlit Studio**, your intelligent assistant for effortlessly creating Streamlit applications! Simply provide your requirements through a prompt, and AutoStreamlit Studio takes care of the rest. It automatically generates, customizes, and runs a Streamlit app tailored to your specifications. Whether you need data visualization, interactive dashboards, or any other Streamlit functionality, AutoStreamlit Studio simplifies the process, turning your ideas into functional apps in no time. Empower your workflow with this innovative tool, designed to save time and enhance productivity for developers and non-developers alike.
 """
