@@ -21,6 +21,64 @@ Welcome to AutoStreamlit Studio, your intelligent assistant designed to effortle
 4. **Manage Chat History**: Use the 'Clear chat history' button to delete the memory of previous chats.
 5. **Delete App File**: Use the 'Delete app file' button to remove the current created app.
 
+## Running the App Locally
+
+### Prerequisites
+- Python 3.9 or later
+- Virtual Environment (recommended)
+
+### Installation Steps
+1. **Clone the Repository**:
+    ```sh
+    git clone <repository-url>
+    cd auto-streamlit
+    ```
+
+2. **Create and Activate a Virtual Environment**:
+    ```sh
+    python -m venv .venv
+    source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+    ```
+
+3. **Install the Dependencies**:
+    ```sh
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    ```
+
+4. **Run the Streamlit App**:
+    ```sh
+    streamlit run app.py
+    ```
+
+5. **Access the App**:
+    Open your web browser and navigate to `http://localhost:8501`.
+
+## Running the App with Docker
+
+### Prerequisites
+- Docker
+
+### Build and Run Steps
+1. **Clone the Repository**:
+    ```sh
+    git clone <repository-url>
+    cd auto-streamlit
+    ```
+
+2. **Build the Docker Image**:
+    ```sh
+    docker build -t autostreamlit-studio .
+    ```
+
+3. **Run the Docker Container**:
+    ```sh
+    docker run -p 8501:8501 autostreamlit-studio
+    ```
+
+4. **Access the App**:
+    Open your web browser and navigate to `http://localhost:8501`.
+
 ## Sidebar UI
 The sidebar of AutoStreamlit Studio provides various functionalities to manage your app development process:
 - **About AutoStreamlit Studio**: Learn more about the tool and its capabilities.
