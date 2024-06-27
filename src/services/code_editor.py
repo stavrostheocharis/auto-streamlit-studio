@@ -2,7 +2,7 @@ from streamlit_ace import st_ace
 import streamlit as st
 import os
 import time
-from utils import check_syntax
+from src.utils.code_management import check_syntax
 
 
 def display_code_editor():
@@ -18,8 +18,6 @@ def display_code_editor():
         else:
             initial_code = "# Your code will appear here."
 
-        # Display the Ace Editor
-
         edited_code = st_ace(
             value=initial_code,
             language="python",
@@ -31,7 +29,6 @@ def display_code_editor():
             auto_update=False,
         )
 
-        # Button to save the edited code
         if st.button("Save Code"):
             valid, error_message = check_syntax(edited_code)
 
@@ -44,7 +41,7 @@ def display_code_editor():
                     {"role": "assistant", "content": f"```\n{edited_code}\n```"}
                 )
                 st.success("Code saved successfully!")
-                time.sleep(1)  # Add a delay of 2 seconds
+                time.sleep(1)
                 st.rerun()
             else:
                 st.error(f"Syntax error in code: {error_message}")

@@ -1,7 +1,7 @@
 import time
 import os
 import streamlit as st
-from utils import get_script
+from src.utils.code_management import get_script
 
 
 def save_version():
@@ -68,12 +68,8 @@ def delete_confirmation():
 
 def display_version_control():
     st.sidebar.markdown("## Version Control")
-    # version_box = st.checkbox("Open version opts", key="vers")
-    # if version_box:
     with st.expander(label="Open version options"):
-
         col1, col2 = st.columns([2, 4])
-
         with col1:
             st.button("Save Version", on_click=save_version, use_container_width=True)
             delete_temp_file()

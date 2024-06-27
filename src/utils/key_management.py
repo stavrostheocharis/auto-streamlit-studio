@@ -83,7 +83,7 @@ def api_token_input():
         st.session_state.auth = {"provider": None, "client": None, "authed": False}
         st.session_state[f"{current_provider.lower()}_token"] = ""
 
-    with st.expander("Add API token", expanded=True):
+    with st.popover("Add API token", use_container_width=True):
         api_token = get_api_token_input(current_provider)
 
         if api_token and validate_token_format(api_token, current_provider):
