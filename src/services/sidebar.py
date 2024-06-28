@@ -3,7 +3,12 @@ import os
 import toml
 
 from src.utils.key_management import api_token_input
-from src.utils.utils import clear_chat_history
+from src.utils.utils import (
+    clear_chat_history,
+    display_disclaimer,
+    display_contacts,
+    add_icon,
+)
 from audio_recorder_streamlit import audio_recorder
 
 from src.services.versioning import display_version_control
@@ -125,8 +130,8 @@ def handle_buttons(provider, client):
 def setup_sidebar():
     provider, client, authed = display_main_sidebar_ui()
     st.sidebar.divider()
-    if authed:
-        with st.sidebar:
+    with st.sidebar:
+        if authed:
             with st.expander("Chat history"):
                 display_chat_messages()
             written_chat(provider, client)
@@ -140,3 +145,14 @@ def setup_sidebar():
 
             display_version_control()
             display_code_editor()
+
+        st.divider()
+        display_disclaimer()
+        st.divider()
+        display_contacts()
+
+        # st.logo(
+        #     "src/logo/logo.png",
+        #     icon_image="",
+        #     link="",
+        # )

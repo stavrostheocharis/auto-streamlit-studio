@@ -39,7 +39,7 @@ def add_logo():
         f"""
             <style>
                 [data-testid="stSidebar"] {{
-                    background-image: url(https://www.uphellas.gr/_next/static/media/logo.b4285350.svg);
+                    background-image: url("src/logo/logo.png");
                     background-repeat: no-repeat;
                     padding-top: 80px;
                     background-position: 20px 20px;
@@ -51,14 +51,54 @@ def add_logo():
 
 
 @st.cache_data(ttl=3600)
-def display_links(repo_link, other_link) -> None:
-    """Displays a repository and other link"""
-    col1, col2 = st.sidebar.columns(2)
-    col1.markdown(
-        f"<a style='display: block; text-align: center;' href={repo_link}>Source code</a>",
+def display_links(*links) -> None:
+    """Displays provided links in the sidebar"""
+    for link in links:
+        if "name" in link and "url" in link:
+            st.sidebar.markdown(
+                f"<a style='display: block; text-align: left;' href={link['url']}>{link['name']}</a>",
+                unsafe_allow_html=True,
+            )
+
+
+@st.cache_data(ttl=3600)
+def add_icon(icon_url, redirect_url, width=100):
+    st.markdown(
+        f"""
+        <a href="{redirect_url}" target="_blank">
+            <img src="{icon_url}" style="width: {width}px; height: auto;">
+        </a>
+        """,
         unsafe_allow_html=True,
     )
-    col2.markdown(
-        f"<a style='display: block; text-align: center;' href={other_link}>App introduction</a>",
-        unsafe_allow_html=True,
+
+
+def display_disclaimer():
+    st.sidebar.write(
+        """
+        ##### ***Disclaimer***
+        *This app is not production-ready as it executes code based on user input, which can potentially harm your system if incorrect code is executed. It is strongly recommended for local use only or to run it in an isolated environment.*
+        """
+    )
+
+
+def display_contacts():
+    st.sidebar.write(
+        """
+        ### **Contacts**
+        [![](https://img.shields.io/badge/GitHub-Follow-informational)](https://github.com/stavrostheocharis)
+        [![](https://img.shields.io/badge/Linkedin-Connect-informational)](https://www.linkedin.com/in/stavros-theocharis-ai/)
+        [![](https://img.shields.io/badge/Open-Issue-informational)](https://github.com/stavrostheocharis/auto-streamlit/issues)
+        """
+    )
+    display_links(
+        {
+            "name": "Follow me on Medium",
+            "url": "https://medium.com/@stavrostheocharis",
+        }
+    )
+    st.sidebar.write(
+        """
+        ###### © Stavros Theocharis, 2024. All rights reserved.
+        """
     )
