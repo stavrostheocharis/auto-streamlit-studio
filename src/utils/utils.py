@@ -85,7 +85,7 @@ def display_disclaimer():
 def display_contacts():
     st.sidebar.write(
         """
-        ### **Contacts**
+        ### **Contact**
         [![](https://img.shields.io/badge/GitHub-Follow-informational)](https://github.com/stavrostheocharis)
         [![](https://img.shields.io/badge/Linkedin-Connect-informational)](https://www.linkedin.com/in/stavros-theocharis-ai/)
         [![](https://img.shields.io/badge/Open-Issue-informational)](https://github.com/stavrostheocharis/auto-streamlit/issues)
