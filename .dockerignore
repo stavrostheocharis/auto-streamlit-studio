@@ -19,8 +19,6 @@ ENV
 # Ignore log files
 *.log
 
-# Ignore Streamlit specific files
-.streamlit
 
 # Ignore temporary files
 *.tmp
