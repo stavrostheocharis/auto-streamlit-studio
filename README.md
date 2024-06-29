@@ -26,7 +26,11 @@ Welcome to `AutoStreamlit Studio`, your intelligent assistant designed to effort
 - **Error Handling and Resolution**: Automatically handle code errors and provide solutions.
 - **Session Management**: Automatically handles session expiration and maintains chat history and code state.
 
+<div align="center">
+
 ![Use Case Example](src/images/use-case-example.gif "Use Case Example")
+
+</div>
 
 > [!IMPORTANT]
 > This app is not **production-ready** as it executes code based on user input, which can potentially harm your system if incorrect code is executed. It is strongly recommended for **local** use only or to run it in an **isolated environment**.
