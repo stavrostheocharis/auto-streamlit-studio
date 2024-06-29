@@ -1,10 +1,10 @@
-
 # Core Functions
+
 ## Authentication and Token Management
-- `api_token_input`: Manages API token input and validation for OpenAI and Replicate providers.
+- `api_token_input`: Manages API token input and validation for **OpenAI** and **Replicate** providers.
 
 ## Prompt and Response Handling
-- `summary_text`: Generates summaries based on user input.
+- `summary_text`: Generates summaries based on user input in order to tackle the limitation of tokens of used models.
 - `initialise_system_prompt`: Initializes the system prompt for OpenAI and Replicate.
 - `setup_openai_prompt`: Sets up the prompt for OpenAI.
 - `setup_replicate_prompt`: Sets up the prompt for Replicate.
