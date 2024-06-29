@@ -3,6 +3,7 @@
 # AutoStreamlit Studio
 
 [![GitHub][github_badge]][github_link]
+[![Test][test_passing_badge]][test_passing_badge]
 [![Licence][licence_badge]][licence_link] 
 [![Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-green.svg)](#supported-python-versions)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) 
