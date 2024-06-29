@@ -30,7 +30,7 @@ from src.services.voice import (
 def display_main_sidebar_ui():
     st.logo(
         "src/images/streamlit-logo.png",
-        link="https://github.com/stavrostheocharis/auto-streamlit",
+        link="https://github.com/stavrostheocharis/auto-streamlit-studio",
     )
     with st.sidebar:
         st.title("AutoStreamlit Studio")
