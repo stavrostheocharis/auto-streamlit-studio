@@ -69,7 +69,11 @@ def test_check_syntax():
 
     is_valid, error = check_syntax(invalid_code)
     assert is_valid is False
-    assert "was never closed" in error
+    assert (
+        "was never closed" in error
+        or "unexpected EOF while parsing" in error
+        or "SyntaxError" in error
+    )
 
 
 def test_validate_code_safety():

@@ -188,11 +188,11 @@ AutoStreamlit Studio is designed to revolutionize the way you create Streamlit a
 
 
 
-
 [github_badge]: https://badgen.net/badge/icon/GitHub?icon=github&color=black&label
 
 [github_link]: https://github.com/stavrostheocharis/auto-streamlit
 
+[test_passing_badge]: https://github.com/stavrostheocharis/auto-streamlit/actions/workflows/python-app.yml/badge.svg
 
 [licence_badge]: https://img.shields.io/github/license/stavrostheocharis/easy_explain
 
