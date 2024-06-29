@@ -75,7 +75,7 @@ def api_token_input():
         st.session_state.auth = {"provider": None, "client": None, "authed": False}
 
     current_provider = st.sidebar.selectbox(
-        "Choose provider", ["OpenAI", "Replicate"], index=0
+        "Choose provider", ["OpenAI", "Replicate"], index=0, key="provider"
     )
 
     # Reset session state if provider changes
