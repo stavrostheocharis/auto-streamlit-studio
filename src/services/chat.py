@@ -15,8 +15,6 @@ def generate_response_if_needed(provider, client):
         created_file = get_script(st.session_state.messages[-1])
         if created_file:
             st.session_state.rerun = True
-            st.balloons()
-            time.sleep(2)
             st.rerun()
 
 

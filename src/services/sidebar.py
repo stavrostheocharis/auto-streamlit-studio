@@ -3,7 +3,12 @@ import os
 import toml
 
 from src.utils.key_management import api_token_input
-from src.utils.utils import clear_chat_history
+from src.utils.utils import (
+    clear_chat_history,
+    display_disclaimer,
+    display_contacts,
+    add_icon,
+)
 from audio_recorder_streamlit import audio_recorder
 
 from src.services.versioning import display_version_control
@@ -23,6 +28,10 @@ from src.services.voice import (
 
 
 def display_main_sidebar_ui():
+    st.logo(
+        "src/images/streamlit-logo.png",
+        link="https://github.com/stavrostheocharis/auto-streamlit",
+    )
     with st.sidebar:
         st.title("AutoStreamlit Studio")
         info = toml.load("info.toml")
@@ -37,12 +46,14 @@ def display_main_sidebar_ui():
         with st.expander("How to Use"):
             st.markdown(
                 """
-                1. Enter your requirements in the chat input box.
-                2. The assistant will generate a Streamlit script based on your input.
-                3. You can download, edit, or run the generated script.
-                4. Use the 'Clear chat history' button to delete the memory of previous chats.
-                5. Use the 'Delete app file' button to delete the current created app.
-            """
+                1. Select your provider and enter the API key.
+                2. Enter your requirements in the chat input box.
+                3. View past conversations in the chat history.
+                4. Use predefined templates to quickly create apps.
+                5. Edit the generated script through chat or in developer mode.
+                6. Save, load, or reset versions using version control.
+                7. Use 'Clear chat history' to delete previous chats.
+                """
             )
 
         provider, client, authed = api_token_input()
@@ -125,8 +136,8 @@ def handle_buttons(provider, client):
 def setup_sidebar():
     provider, client, authed = display_main_sidebar_ui()
     st.sidebar.divider()
-    if authed:
-        with st.sidebar:
+    with st.sidebar:
+        if authed:
             with st.expander("Chat history"):
                 display_chat_messages()
             written_chat(provider, client)
@@ -140,3 +151,8 @@ def setup_sidebar():
 
             display_version_control()
             display_code_editor()
+
+        st.divider()
+        display_disclaimer()
+        st.divider()
+        display_contacts()

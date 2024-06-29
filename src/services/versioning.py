@@ -16,9 +16,9 @@ def save_version():
         with open(st.session_state.temp_file_path, "r") as file:
             current_code = file.read()
         st.session_state.versions.append(current_code)
-        st.sidebar.success("Version saved successfully!")
+        st.toast("Version was saved successfully!", icon="✅️")
     else:
-        st.sidebar.error("No code available to save.")
+        st.toast("No code available to save.", icon="🚨")
 
 
 def delete_temp_file():
@@ -56,6 +56,7 @@ def delete_confirmation():
                 if "versions" in st.session_state and st.session_state.versions:
                     st.session_state.versions = []
                     st.success("All versions cleared successfully!")
+                    time.sleep(1)
                     st.success("The app has been reseted successfully.")
                     time.sleep(2)
                 st.rerun()
@@ -86,8 +87,8 @@ def display_version_control():
                     st.session_state.messages.append(
                         {"role": "assistant", "content": selected_version_code}
                     )
-
                     created_file = get_script(st.session_state.messages[-1])
+                    st.toast(f"Loaded app version ''{version}''.", icon="ℹ️")
                     if created_file:
                         st.session_state.rerun = True
                         st.rerun()

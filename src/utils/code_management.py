@@ -76,7 +76,7 @@ def execute_user_code(file_path):
             if st.session_state.rerun:
                 st.session_state.rerun = False
                 st.balloons()
-                time.sleep(2)
+                time.sleep(1)
                 st.rerun()
         except Exception as e:
             handle_import_error(e)
