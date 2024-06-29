@@ -29,7 +29,7 @@ from src.services.voice import (
 
 def display_main_sidebar_ui():
     st.logo(
-        "src/logo/streamlit-logo-1A3B208AE4-seeklogo.com.png",
+        "src/images/streamlit-logo.png",
         link="https://github.com/stavrostheocharis/auto-streamlit",
     )
     with st.sidebar:
