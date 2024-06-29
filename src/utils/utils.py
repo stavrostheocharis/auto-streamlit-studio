@@ -88,7 +88,7 @@ def display_contacts():
         ### **Contact**
         [![](https://img.shields.io/badge/GitHub-Follow-informational)](https://github.com/stavrostheocharis)
         [![](https://img.shields.io/badge/Linkedin-Connect-informational)](https://www.linkedin.com/in/stavros-theocharis-ai/)
-        [![](https://img.shields.io/badge/Open-Issue-informational)](https://github.com/stavrostheocharis/auto-streamlit/issues)
+        [![](https://img.shields.io/badge/Open-Issue-informational)](https://github.com/stavrostheocharis/auto-streamlit-studio/issues)
         """
     )
     display_links(

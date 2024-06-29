@@ -58,7 +58,7 @@ Welcome to `AutoStreamlit Studio`, your intelligent assistant designed to effort
 1. **Clone the Repository**:
     ```sh
     git clone <repository-url>
-    cd auto-streamlit
+    cd auto-streamlit-studio
     ```
 
 2. **Create and Activate a Virtual Environment**:
@@ -90,7 +90,7 @@ Welcome to `AutoStreamlit Studio`, your intelligent assistant designed to effort
 1. **Clone the Repository**:
     ```sh
     git clone <repository-url>
-    cd auto-streamlit
+    cd auto-streamlit-studio
     ```
 
 2. **Build the Docker Image**:
@@ -151,7 +151,7 @@ By leveraging these powerful libraries, AutoStreamlit Studio enables you to quic
 
 ## How to Open Issues
 
-Submit Issues: Encounter a bug or have a feature idea? Let us know through our  [issues page](https://github.com/stavrostheocharis/auto-streamlit/issues).
+Submit Issues: Encounter a bug or have a feature idea? Let us know through our  [issues page](https://github.com/stavrostheocharis/auto-streamlit-studio/issues).
 
 
 ## How to Contribute
@@ -162,7 +162,7 @@ Contributions are welcome! If you'd like to contribute to `AutoStreamlit Studio`
 2. **Clone the Repository**: Clone your forked repository to your local machine.
     ```sh
     git clone <your-forked-repo-url>
-    cd auto-streamlit
+    cd auto-streamlit-studio
     ```
 3. **Create a Branch**: Create a new branch for your feature or bug fix.
     ```sh
@@ -190,9 +190,9 @@ AutoStreamlit Studio is designed to revolutionize the way you create Streamlit a
 
 [github_badge]: https://badgen.net/badge/icon/GitHub?icon=github&color=black&label
 
-[github_link]: https://github.com/stavrostheocharis/auto-streamlit
+[github_link]: https://github.com/stavrostheocharis/auto-streamlit-studio
 
-[test_passing_badge]: https://github.com/stavrostheocharis/auto-streamlit/actions/workflows/python-app.yml/badge.svg
+[test_passing_badge]: https://github.com/stavrostheocharis/auto-streamlit-studio/actions/workflows/python-app.yml/badge.svg
 
 [licence_badge]: https://img.shields.io/github/license/stavrostheocharis/easy_explain
 

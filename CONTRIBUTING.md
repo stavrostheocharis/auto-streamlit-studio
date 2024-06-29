@@ -1,7 +1,7 @@
 # How to contribute
 
 All contributions, ideas and bug reports are more than welcome! 
-We encourage you to open an [issue](https://github.com/stavrostheocharis/auto-streamlit/issues) for any change you would like to make on this project.
+We encourage you to open an [issue](https://github.com/stavrostheocharis/auto-streamlit-studio/issues) for any change you would like to make on this project.
 
 ## Workflow
 
