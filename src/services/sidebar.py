@@ -73,7 +73,6 @@ def handle_buttons(provider, client):
             # energy_threshold=0.01,
             # neutral_color="#303030",
             icon_size="2x",
-            auto_start=False,
             key="audio_rec",
         )
 
