@@ -2,6 +2,7 @@
 
 # AutoStreamlit Studio
 
+[![Open in Streamlit][share_badge]][share_link] 
 [![GitHub][github_badge]][github_link]
 [![Test][test_passing_badge]][test_passing_badge]
 [![Licence][licence_badge]][licence_link] 
@@ -187,7 +188,9 @@ Thank you for contributing!
 ## Conclusion
 AutoStreamlit Studio is designed to revolutionize the way you create Streamlit applications. With its intelligent assistant, customizable templates, and interactive features, you can quickly turn your ideas into functional apps, saving time and boosting productivity. Whether you are a developer looking to streamline your workflow or a non-developer needing to create powerful data-driven apps, AutoStreamlit Studio is your go-to solution.
 
+[share_badge]: https://static.streamlit.io/badges/streamlit_badge_black_white.svg
 
+[share_link]: https://auto-stream-studio.streamlit.app/
 
 [github_badge]: https://badgen.net/badge/icon/GitHub?icon=github&color=black&label
 
