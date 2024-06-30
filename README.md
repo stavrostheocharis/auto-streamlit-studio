@@ -50,6 +50,16 @@ Welcome to `AutoStreamlit Studio`, your intelligent assistant designed to effort
 10. **Download the Script**: Download the generated script as a `.py` file.
 11. **Handle Errors**: The app identifies errors in the generated code and provides options to resolve them.
 
+### Sidebar UI
+The sidebar of AutoStreamlit Studio provides various functionalities to manage your app development process:
+- **About AutoStreamlit Studio**: Learn more about the tool and its capabilities.
+- **How to Use**: Detailed instructions on how to interact with the tool.
+- **API Token Management**: Securely manage your API tokens for OpenAI and Replicate providers.
+- **Chat History**: View the history of your interactions with the assistant.
+- **Template Selection**: Choose from a variety of pre-defined templates to start your app.
+- **Version Control**: Manage different versions of your app to keep track of changes.
+- **Code Editor**: Edit the generated code directly within the app.
+
 
 ### Video Tutorial
 
@@ -116,16 +126,6 @@ Welcome to `AutoStreamlit Studio`, your intelligent assistant designed to effort
 
 4. **Access the App**:
     Open your web browser and navigate to `http://localhost:8501`.
-
-## Sidebar UI
-The sidebar of AutoStreamlit Studio provides various functionalities to manage your app development process:
-- **About AutoStreamlit Studio**: Learn more about the tool and its capabilities.
-- **How to Use**: Detailed instructions on how to interact with the tool.
-- **API Token Management**: Securely manage your API tokens for OpenAI and Replicate providers.
-- **Chat History**: View the history of your interactions with the assistant.
-- **Template Selection**: Choose from a variety of pre-defined templates to start your app.
-- **Version Control**: Manage different versions of your app to keep track of changes.
-- **Code Editor**: Edit the generated code directly within the app.
 
 
 ## Getting Started
