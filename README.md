@@ -50,6 +50,15 @@ Welcome to `AutoStreamlit Studio`, your intelligent assistant designed to effort
 10. **Download the Script**: Download the generated script as a `.py` file.
 11. **Handle Errors**: The app identifies errors in the generated code and provides options to resolve them.
 
+
+### Video Tutorial
+
+<div align="center">
+
+[![Watch the video](https://img.youtube.com/vi/YYHxokV76aw/0.jpg)](https://www.youtube.com/watch?v=YYHxokV76aw)
+
+</div>
+
 ## Running the App Locally
 
 ### Prerequisites
